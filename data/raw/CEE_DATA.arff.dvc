@@ -1,0 +1,5 @@
+outs:
+- md5: 6af58719c88b9a8c14df007cd35312e9
+  size: 71018
+  hash: md5
+  path: CEE_DATA.arff
