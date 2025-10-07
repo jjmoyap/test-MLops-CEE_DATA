@@ -1,4 +1,4 @@
 [core]
-    remote = gdrive_remote
-['remote "gdrive_remote"']
-    url = gdrive://18PeiQunAyyrp6PEu8-w_nqOe3BUhM4ZN
+    remote = dropbox_remote
+['remote "dropbox_remote"']
+    url = C:\Users\Jorge Moya\Dropbox\ml-CEE_DATA-dvc
