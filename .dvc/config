@@ -1,4 +1,4 @@
 [core]
     remote = dropbox_remote
 ['remote "dropbox_remote"']
-    url = /Users/pablo/Dropbox/ml-CEE_DATA-dvc
+    url = C:\Users\Jorge Moya\Dropbox\ml-CEE_DATA-dvc
