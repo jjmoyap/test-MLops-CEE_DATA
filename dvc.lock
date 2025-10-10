@@ -1,0 +1,74 @@
+schema: '2.0'
+stages:
+  eda:
+    cmd: cd notebooks && mkdir -p _executed && papermill 00_eda_ds.ipynb 
+      _executed/00_eda_ds_out.ipynb
+    deps:
+    - path: data/intermediate/df.pkl
+      hash: md5
+      md5: 14657b42cfa367a2682610d57bf76941
+      size: 125908
+    - path: data/raw/CEE_DATA.arff
+      hash: md5
+      md5: 6af58719c88b9a8c14df007cd35312e9
+      size: 71018
+    - path: notebooks/00_eda_ds.ipynb
+      hash: md5
+      md5: 982150aed8f5fe617a3d94f1f5929cbd
+      size: 517193
+    outs:
+    - path: notebooks/_executed/00_eda_ds_out.ipynb
+      hash: md5
+      md5: 7059caafc0d5d1ed9e69135da70bdf89
+      size: 517203
+  data_engineering:
+    cmd: cd notebooks && mkdir -p _executed && papermill 
+      01_data_engineering.ipynb _executed/01_data_engineering_out.ipynb
+    deps:
+    - path: notebooks/01_data_engineering.ipynb
+      hash: md5
+      md5: b533895b708d7fa9179a901e30e73d64
+      size: 5889
+    - path: notebooks/_executed/00_eda_ds_out.ipynb
+      hash: md5
+      md5: 7059caafc0d5d1ed9e69135da70bdf89
+      size: 517203
+    outs:
+    - path: notebooks/_executed/01_data_engineering_out.ipynb
+      hash: md5
+      md5: e57be646e4b10a6d46f3636ccaad8636
+      size: 6844
+  feature_engineering:
+    cmd: cd notebooks && mkdir -p _executed && papermill 
+      02_feature_engineering.ipynb _executed/02_feature_engineering_out.ipynb
+    deps:
+    - path: notebooks/02_feature_engineering.ipynb
+      hash: md5
+      md5: f05e7494196146f7894b18cadd6f3214
+      size: 2014
+    - path: notebooks/_executed/01_data_engineering_out.ipynb
+      hash: md5
+      md5: e57be646e4b10a6d46f3636ccaad8636
+      size: 6844
+    outs:
+    - path: notebooks/_executed/02_feature_engineering_out.ipynb
+      hash: md5
+      md5: 5b4299e25f1cd0bdcab55c33a2a1d098
+      size: 2974
+  model_training:
+    cmd: cd notebooks && mkdir -p _executed && papermill 03_model_training.ipynb
+      _executed/03_model_training_out.ipynb
+    deps:
+    - path: notebooks/03_model_training.ipynb
+      hash: md5
+      md5: d023592275a1c98a1a128e5c35c6a74c
+      size: 105484
+    - path: notebooks/_executed/02_feature_engineering_out.ipynb
+      hash: md5
+      md5: e77cefc505d03f516651c70d0ad5d38a
+      size: 2975
+    outs:
+    - path: notebooks/_executed/03_model_training_out.ipynb
+      hash: md5
+      md5: c11bc1e56893076915173d5dcafc320c
+      size: 106554
