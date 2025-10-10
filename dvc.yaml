@@ -1,0 +1,11 @@
+stages:
+  eda:
+    cmd: mkdir -p notebooks/_executed && papermill notebooks/00_eda_ds.ipynb notebooks/_executed/00_eda_ds_out.ipynb
+    deps:
+      - notebooks/00_eda_ds.ipynb
+      - data/raw/CEE_DATA.arff
+    outs:
+      - data/processed/CEE_DATA_clean.csv
+      - data/processed/CEE_DATA_for_viz.csv
+
+ 
