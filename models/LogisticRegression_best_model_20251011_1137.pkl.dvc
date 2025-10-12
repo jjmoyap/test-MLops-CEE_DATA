@@ -1,0 +1,5 @@
+outs:
+- md5: 543a92d5652e89dd897db439bada32be
+  size: 1551
+  hash: md5
+  path: LogisticRegression_best_model_20251011_1137.pkl

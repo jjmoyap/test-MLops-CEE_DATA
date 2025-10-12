@@ -1,0 +1,5 @@
+outs:
+- md5: aba784da83b9c98616389a38fc16813a
+  size: 587808
+  hash: md5
+  path: LightGBM_best_model_20251011_1141.pkl

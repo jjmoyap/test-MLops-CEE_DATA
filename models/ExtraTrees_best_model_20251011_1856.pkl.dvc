@@ -1,0 +1,5 @@
+outs:
+- md5: 246d04a0dd745dd55d6f8795e9d68112
+  size: 11100193
+  hash: md5
+  path: ExtraTrees_best_model_20251011_1856.pkl
