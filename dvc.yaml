@@ -1,33 +1,16 @@
 stages:
-  eda:
-    cmd: cd notebooks && mkdir -p _executed && papermill 00_eda_ds.ipynb _executed/00_eda_ds_out.ipynb
+  full_pipeline:
+    cmd: |
+      cd notebooks && \
+      mkdir -p _executed && \
+      papermill ml_pipeline.ipynb _executed/ml_pipeline_out.ipynb
     deps:
-      - notebooks/00_eda_ds.ipynb
+      - notebooks/ml_pipeline.ipynb
       - data/raw/CEE_DATA.arff
+    outs:
+      - notebooks/_executed/ml_pipeline_out.ipynb
       - data/intermediate/df.pkl
-    outs:
-      - notebooks/_executed/00_eda_ds_out.ipynb
-
-  data_engineering:
-    cmd: cd notebooks && mkdir -p _executed && papermill 01_data_engineering.ipynb _executed/01_data_engineering_out.ipynb
-    deps:
-      - notebooks/01_data_engineering.ipynb
-      - notebooks/_executed/00_eda_ds_out.ipynb
-    outs:
-      - notebooks/_executed/01_data_engineering_out.ipynb
-
-  feature_engineering:
-    cmd: cd notebooks && mkdir -p _executed && papermill 02_feature_engineering.ipynb _executed/02_feature_engineering_out.ipynb
-    deps:
-      - notebooks/02_feature_engineering.ipynb
-      - notebooks/_executed/01_data_engineering_out.ipynb
-    outs:
-      - notebooks/_executed/02_feature_engineering_out.ipynb
-
-  model_training:
-    cmd: cd notebooks && mkdir -p _executed && papermill 03_model_training.ipynb _executed/03_model_training_out.ipynb
-    deps:
-      - notebooks/03_model_training.ipynb
-      - notebooks/_executed/02_feature_engineering_out.ipynb
-    outs:
-      - notebooks/_executed/03_model_training_out.ipynb
+      - data/processed/Xy_train_resampled.pkl
+      - data/processed/Xy_test.pkl
+      - models/
+      - reports/models_summary/
