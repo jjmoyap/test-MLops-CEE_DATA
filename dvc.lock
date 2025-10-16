@@ -1,8 +1,7 @@
 schema: '2.0'
 stages:
   eda:
-    cmd: cd notebooks && mkdir -p _executed && papermill 00_eda_ds.ipynb 
-      _executed/00_eda_ds_out.ipynb
+    cmd: cd notebooks && mkdir -p _executed && papermill 00_eda_ds.ipynb _executed/00_eda_ds_out.ipynb
     deps:
     - path: data/intermediate/df.pkl
       hash: md5
@@ -22,8 +21,8 @@ stages:
       md5: 7059caafc0d5d1ed9e69135da70bdf89
       size: 517203
   data_engineering:
-    cmd: cd notebooks && mkdir -p _executed && papermill 
-      01_data_engineering.ipynb _executed/01_data_engineering_out.ipynb
+    cmd: cd notebooks && mkdir -p _executed && papermill 01_data_engineering.ipynb
+      _executed/01_data_engineering_out.ipynb
     deps:
     - path: notebooks/01_data_engineering.ipynb
       hash: md5
@@ -39,8 +38,8 @@ stages:
       md5: e57be646e4b10a6d46f3636ccaad8636
       size: 6844
   feature_engineering:
-    cmd: cd notebooks && mkdir -p _executed && papermill 
-      02_feature_engineering.ipynb _executed/02_feature_engineering_out.ipynb
+    cmd: cd notebooks && mkdir -p _executed && papermill 02_feature_engineering.ipynb
+      _executed/02_feature_engineering_out.ipynb
     deps:
     - path: notebooks/02_feature_engineering.ipynb
       hash: md5
@@ -56,8 +55,7 @@ stages:
       md5: 5b4299e25f1cd0bdcab55c33a2a1d098
       size: 2974
   model_training:
-    cmd: cd notebooks && mkdir -p _executed && papermill 03_model_training.ipynb
-      _executed/03_model_training_out.ipynb
+    cmd: cd notebooks && mkdir -p _executed && papermill 03_model_training.ipynb _executed/03_model_training_out.ipynb
     deps:
     - path: notebooks/03_model_training.ipynb
       hash: md5
@@ -72,3 +70,42 @@ stages:
       hash: md5
       md5: 6391020ac82734bf24310f5c96aaa309
       size: 106554
+  full_pipeline:
+    cmd: cd notebooks && if not exist _executed mkdir _executed && papermill ml_pipeline.ipynb
+      _executed/ml_pipeline_out.ipynb
+    deps:
+    - path: data/raw/CEE_DATA.arff
+      hash: md5
+      md5: 6af58719c88b9a8c14df007cd35312e9
+      size: 71018
+    - path: notebooks/ml_pipeline.ipynb
+      hash: md5
+      md5: cc5c06bbbf42946f3ffc66358bdb01cd
+      size: 8790
+    outs:
+    - path: data/intermediate/df.pkl
+      hash: md5
+      md5: 12b7e207e9a3cc1ee5ec03670710e64f
+      size: 174097
+    - path: data/processed/Xy_test.pkl
+      hash: md5
+      md5: 22996592fbf54b1884a0915d21944c76
+      size: 24986
+    - path: data/processed/Xy_train_resampled.pkl
+      hash: md5
+      md5: 944357ae23baa2a832c6d0ca733f008b
+      size: 132089
+    - path: models/
+      hash: md5
+      md5: a538af0564d807ea9b9776285ed6c412.dir
+      size: 6078668
+      nfiles: 8
+    - path: notebooks/_executed/ml_pipeline_out.ipynb
+      hash: md5
+      md5: 6a3f5e4c04c85675036962f070197b34
+      size: 119145
+    - path: reports/models_summary/
+      hash: md5
+      md5: 82af7d289c9a265f585bb7524134879a.dir
+      size: 133
+      nfiles: 1
