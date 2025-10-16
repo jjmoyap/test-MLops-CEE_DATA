@@ -1,3 +1,28 @@
+# =====================
+# Modelos y resultados controlados por DVC
+# =====================
 /models
-/models_summary
-catboost_info/
+/reports/models_summary
+/catboost_info
+
+# =====================
+# Python cache
+# =====================
+__pycache__/
+*.py[cod]
+*$py.class
+
+# =====================
+# Jupyter
+# =====================
+.ipynb_checkpoints/
+
+# =====================
+# MLflow local tracking
+# =====================
+mlruns/
+
+# =====================
+# DVC cache (si usas remotos, no subirlos)
+# =====================
+.dvc/cache/
