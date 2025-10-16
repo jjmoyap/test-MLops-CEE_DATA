@@ -1,9 +1,6 @@
 stages:
   full_pipeline:
-    cmd: |
-      cd notebooks && \
-      mkdir -p _executed && \
-      papermill ml_pipeline.ipynb _executed/ml_pipeline_out.ipynb
+    cmd: cd notebooks && if not exist _executed mkdir _executed && papermill ml_pipeline.ipynb _executed/ml_pipeline_out.ipynb
     deps:
       - notebooks/ml_pipeline.ipynb
       - data/raw/CEE_DATA.arff
