@@ -1,5 +1,0 @@
-outs:
-- md5: c9aa4111e65b23b132082d70410d93ea
-  size: 6691889
-  hash: md5
-  path: RandomForest_best_model_20251011_1124.pkl

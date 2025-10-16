@@ -1,5 +1,0 @@
-outs:
-- md5: ee15951545232d964ce83da5f2c06d01
-  size: 579575
-  hash: md5
-  path: CatBoost_best_model_20251011_1421.pkl

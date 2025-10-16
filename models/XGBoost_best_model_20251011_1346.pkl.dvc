@@ -1,5 +1,0 @@
-outs:
-- md5: b7e4ea907d171a9a17997ecfba5c6234
-  size: 677392
-  hash: md5
-  path: XGBoost_best_model_20251011_1346.pkl
