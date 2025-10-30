@@ -12,7 +12,7 @@ class PipelineML:
     Clase que encapsula todo el flujo de entrenamiento, evaluación y logging de modelos ML.
     """
 
-    def __init__(self, model_dir, mlflow_experiment="default", cv=5):
+    def __init__(self, model_dir, mlflow_experiment, cv=5):
         """
         Inicializa paths y experimentos.
 
@@ -102,7 +102,7 @@ class PipelineML:
             name (str): Nombre del modelo
         """
         timestamp = datetime.now().strftime("%Y%m%d_%H%M")
-        save_path = self.model_dir / f"{name}_best_model_{timestamp}.pkl"
+        save_path = self.model_dir / f"{name}_best_model.pkl"
         with open(save_path, "wb") as f:
             pickle.dump(model, f)
         return save_path
@@ -122,23 +122,27 @@ class PipelineML:
         """
         if params is None:
             params = {}
-
+        # Entrenamiento con Validacion cruzada o GridSearch
         best_model, best_score, best_params = self.train_model(model, params, X_train, y_train)
-        self.evaluate_model(best_model, X_test, y_test)
 
-        # Log en MLflow
-        if best_params:
-            mlflow.log_params(best_params)
-        mlflow.log_metric("F1_CV", best_score)
-        mlflow.sklearn.log_model(best_model, artifact_path="models")
+        # Evaluacion del modelo
+        y_pred = self.evaluate_model(best_model, X_test, y_test)
 
+        # Guardar resultados en la estructura interna del pipeline
         self.results_summary.append({
             "Model": type(model).__name__,
             "F1_CV": best_score
         })
 
         # Guardar modelo
-        save_path = self.save_model(best_model, type(model).__name__)
-        mlflow.log_artifact(save_path)
+        classifier_name = type(model.named_steps['classifier']).__name__
+        save_path = self.save_model(best_model, classifier_name)
 
-        return best_model, best_score, best_params
+        # 👉 Quitamos cualquier logging de MLflow aquí
+        # if best_params:
+        #     mlflow.log_params(best_params)
+        # mlflow.log_metric("F1_CV", best_score)
+        # mlflow.sklearn.log_model(best_model, artifact_path="models")
+        # mlflow.log_artifact(save_path)        
+        
+        return best_model, best_score, best_params, save_path, y_pred
