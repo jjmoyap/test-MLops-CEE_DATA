@@ -7,6 +7,10 @@ from datetime import datetime
 from sklearn.model_selection import GridSearchCV
 from sklearn.metrics import make_scorer, f1_score, classification_report, confusion_matrix
 
+from .mlflow import MLflowTracker
+from pathlib import Path
+from datetime import datetime
+
 class PipelineML:
     """
     Clase que encapsula todo el flujo de entrenamiento, evaluación y logging de modelos ML.
@@ -51,19 +55,13 @@ class PipelineML:
             f1_score_train = f1_score(y, model.predict(X), average='macro')
             return model, f1_score_train, {}
 
-    def evaluate_model(self, model, X_test, y_test, thresholds=None, plot_cm=True):
+    def evaluate_model(self, model, X_test, y_test, thresholds=None, plot_cm=True, out_dir="results"):
         """
-        Evalúa un modelo, imprime métricas y grafica matriz de confusión.
-
-        Args:
-            model: Estimador entrenado
-            X_test, y_test: Datos de test
-            thresholds (dict): Umbrales opcionales para predict_proba
-            plot_cm (bool): Si True, genera matriz de confusión
-
-        Returns:
-            y_pred: Predicciones finales
+        Evalúa y, opcionalmente, guarda la matriz de confusión normalizada **en disco**.
+        NO hace logging a MLflow; solo retorna lo necesario.
+        Devuelve: (y_pred, cm_path)
         """
+        # Predicción (con umbrales si aplica)
         if hasattr(model, "predict_proba") and thresholds:
             probs = model.predict_proba(X_test)
             y_pred_adj = []
@@ -72,26 +70,33 @@ class PipelineML:
                 if candidates:
                     y_pred_adj.append(candidates[np.argmax([p[i] for i in candidates])])
                 else:
-                    y_pred_adj.append(np.argmax(p))
+                    y_pred_adj.append(int(np.argmax(p)))
             y_pred = np.array(y_pred_adj)
         else:
             y_pred = model.predict(X_test)
 
-        print(classification_report(y_test, y_pred))
+        # Reporte rápido a consola (opcional)
+        try:
+            print(classification_report(y_test, y_pred))
+        except Exception:
+            pass
 
+        cm_path = None
         if plot_cm:
+            Path(out_dir).mkdir(parents=True, exist_ok=True)
             cm = confusion_matrix(y_test, y_pred)
-            cm_norm = cm.astype('float') / cm.sum(axis=1)[:, np.newaxis]
-            plt.figure(figsize=(6,5))
+            cm_norm = cm.astype('float') / cm.sum(axis=1, keepdims=True)
+            plt.figure(figsize=(6, 5))
             sns.heatmap(cm_norm, annot=True, fmt=".2f", cmap="Blues")
             plt.title('Matriz de Confusión Normalizada')
             plt.ylabel("True")
             plt.xlabel("Pred")
-            plt.show()
-            # Log figura en MLflow
-            mlflow.log_figure(plt.gcf(), "confusion_matrix.png")
+            cm_path = str(Path(out_dir) / "confusion_matrix.png")
+            print(f"Guardando matriz de confusión en: {cm_path}")
+            plt.savefig(cm_path, bbox_inches="tight")
+            plt.close()
 
-        return y_pred
+        return y_pred, cm_path
 
     def save_model(self, model, name):
         """
@@ -109,40 +114,43 @@ class PipelineML:
 
     def train_and_evaluate_model(self, model, X_train, y_train, X_test, y_test, params=None):
         """
-        Función principal para entrenar y evaluar un modelo con logging en MLflow.
-
-        Args:
-            model: Estimador sklearn
-            X_train, y_train: Datos de entrenamiento
-            X_test, y_test: Datos de test
-            params (dict, optional): Parámetros para GridSearchCV. Default None.
-
-        Returns:
-            best_model, best_score, best_params
+        Orquesta el ciclo y REGISTRA en MLflow de forma uniforme.
+        Devuelve: best_model, best_score, best_params, save_path, y_pred
         """
         if params is None:
             params = {}
         # Entrenamiento con Validacion cruzada o GridSearch
         best_model, best_score, best_params = self.train_model(model, params, X_train, y_train)
 
-        # Evaluacion del modelo
-        y_pred = self.evaluate_model(best_model, X_test, y_test)
+        y_pred, cm_path = self.evaluate_model(best_model, X_test, y_test, plot_cm=True, out_dir="results")
 
-        # Guardar resultados en la estructura interna del pipeline
-        self.results_summary.append({
-            "Model": type(model).__name__,
-            "F1_CV": best_score
-        })
-
-        # Guardar modelo
         classifier_name = type(model.named_steps['classifier']).__name__
-        save_path = self.save_model(best_model, classifier_name)
+        Path(self.model_dir).mkdir(parents=True, exist_ok=True)
+        ts = datetime.now().strftime("%Y%m%d_%H%M%S")
+        save_path = str(Path(self.model_dir) / f"{classifier_name}_best_model__{ts}.pkl")
+        with open(save_path, "wb") as f:
+            pickle.dump(best_model, f)
 
-        # 👉 Quitamos cualquier logging de MLflow aquí
-        # if best_params:
-        #     mlflow.log_params(best_params)
-        # mlflow.log_metric("F1_CV", best_score)
-        # mlflow.sklearn.log_model(best_model, artifact_path="models")
-        # mlflow.log_artifact(save_path)        
-        
+        tracker = MLflowTracker(experiment_name=self.mlflow_experiment)
+        params_log = {"model_name": classifier_name}
+        if best_params:
+            # evita colisiones y deja claro que son óptimos
+            params_log.update({f"best_{k}": v for k, v in best_params.items()})
+
+        metrics_log = {"F1_CV": float(best_score)}
+
+        # Abre un run y registra todo en el mismo contexto
+        with tracker.start_run(run_name=classifier_name):
+            tracker.log_model_results(
+                model=best_model,
+                metrics=metrics_log,
+                best_params=best_params or {},
+                artifact_path="models",
+                save_path=save_path,
+            )
+            if cm_path:
+                # sube la figura ya generada (o podrías recomputarla con y_test/y_pred si prefieres)
+                tracker.log_confusion_matrix(
+                    y_test=y_test, y_pred=y_pred, artifact_path=cm_path)
+
         return best_model, best_score, best_params, save_path, y_pred
