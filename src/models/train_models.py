@@ -83,19 +83,6 @@ class PipelineML:
             pass
 
         cm_path = None
-        if plot_cm:
-            Path(out_dir).mkdir(parents=True, exist_ok=True)
-            cm = confusion_matrix(y_test, y_pred)
-            cm_norm = cm.astype('float') / cm.sum(axis=1, keepdims=True)
-            plt.figure(figsize=(6, 5))
-            sns.heatmap(cm_norm, annot=True, fmt=".2f", cmap="Blues")
-            plt.title('Matriz de Confusión Normalizada')
-            plt.ylabel("True")
-            plt.xlabel("Pred")
-            cm_path = str(Path(out_dir) / "confusion_matrix.png")
-            print(f"Guardando matriz de confusión en: {cm_path}")
-            plt.savefig(cm_path, bbox_inches="tight")
-            plt.close()
 
         return y_pred, cm_path
 
@@ -140,22 +127,15 @@ class PipelineML:
 
         metrics_log = {"F1_CV": float(best_score)}
 
-        # Valvula de seguridad
-        if mlflow.active_run() is not None:
-            mlflow.end_run()
-
-        # Abre un run y registra todo en el mismo contexto
-        with tracker.start_run(run_name=classifier_name):
-            tracker.log_model_results(
-                model=best_model,
-                metrics=metrics_log,
-                best_params=best_params or {},
-                artifact_path="models",
-                save_path=save_path,
-            )
-            if cm_path:
-                # sube la figura ya generada (o podrías recomputarla con y_test/y_pred si prefieres)
-                tracker.log_confusion_matrix(
-                    y_test=y_test, y_pred=y_pred, artifact_path=cm_path)
+        tracker.log_model_results(
+            model=best_model,
+            metrics=metrics_log,
+            best_params=best_params or {},
+            artifact_path="models",
+            save_path=save_path,
+        )
+        if cm_path:
+            tracker.log_confusion_matrix(
+                y_test=y_test, y_pred=y_pred, artifact_path=cm_path)
 
         return best_model, best_score, best_params, save_path, y_pred
