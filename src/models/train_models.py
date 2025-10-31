@@ -28,6 +28,7 @@ class PipelineML:
         self.model_dir = model_dir
         self.cv = cv
         self.results_summary = []
+        self.mlflow_experiment = mlflow_experiment
 
         # Configurar MLflow
         mlflow.set_experiment(mlflow_experiment)
@@ -138,6 +139,10 @@ class PipelineML:
             params_log.update({f"best_{k}": v for k, v in best_params.items()})
 
         metrics_log = {"F1_CV": float(best_score)}
+
+        # Valvula de seguridad
+        if mlflow.active_run() is not None:
+            mlflow.end_run()
 
         # Abre un run y registra todo en el mismo contexto
         with tracker.start_run(run_name=classifier_name):
