@@ -80,8 +80,8 @@ stages:
       size: 71018
     - path: notebooks/ml_pipeline.ipynb
       hash: md5
-      md5: 28154d92f4c9aa86e4bdb6c5bf98d00a
-      size: 9531
+      md5: 318a175fe8af4f015b599ebf32f01eae
+      size: 120813
     outs:
     - path: data/intermediate/df.pkl
       hash: md5
@@ -97,13 +97,13 @@ stages:
       size: 132089
     - path: models/
       hash: md5
-      md5: 69c77bc858d69d2df42de952541fa12f.dir
-      size: 17724436
-      nfiles: 5
+      md5: cde74306a633fe7c2cc4afeea053ea24.dir
+      size: 64411898
+      nfiles: 31
     - path: notebooks/_executed/ml_pipeline_out.ipynb
       hash: md5
-      md5: 0f72514f42d3fa873f345b01d8715a84
-      size: 125430
+      md5: 8ca5e157eae2be5d63bb264b3a3ae10c
+      size: 24421
     - path: reports/models_summary/
       hash: md5
       md5: d751713988987e9331980363e24189ce.dir
