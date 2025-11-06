@@ -71,41 +71,49 @@ stages:
       md5: 6391020ac82734bf24310f5c96aaa309
       size: 106554
   full_pipeline:
-    cmd: cd notebooks && if not exist _executed mkdir _executed && papermill ml_pipeline.ipynb
-      _executed/ml_pipeline_out.ipynb
+    cmd: python src/pipelines/ml_pipeline.py
     deps:
     - path: data/raw/CEE_DATA.arff
       hash: md5
       md5: 6af58719c88b9a8c14df007cd35312e9
       size: 71018
-    - path: notebooks/ml_pipeline.ipynb
+    - path: src/data/load_data.py
       hash: md5
-      md5: 318a175fe8af4f015b599ebf32f01eae
-      size: 120813
+      md5: e5da0200bf3cfd7abec505bb4b963765
+      size: 876
+    - path: src/features/feature_engineering.py
+      hash: md5
+      md5: 363a95261d02d918923c4c30e8b1d22a
+      size: 1945
+    - path: src/models/mlflow.py
+      hash: md5
+      md5: c8b9caf332ce463c69615e3049333e2d
+      size: 7329
+    - path: src/models/train_models.py
+      hash: md5
+      md5: d6193bdb6fec300a65c77742f8f69d31
+      size: 4879
+    - path: src/pipelines/ml_pipeline.py
+      hash: md5
+      md5: f30f98a0d033c2be78165e54770f2ae7
+      size: 9317
+    - path: src/visualization/plot_utils.py
+      hash: md5
+      md5: 1d3f2485899346471c54ca69986042c0
+      size: 2224
     outs:
-    - path: data/intermediate/df.pkl
+    - path: mlruns/
       hash: md5
-      md5: 12b7e207e9a3cc1ee5ec03670710e64f
-      size: 174097
-    - path: data/processed/Xy_test.pkl
-      hash: md5
-      md5: 22996592fbf54b1884a0915d21944c76
-      size: 24986
-    - path: data/processed/Xy_train_resampled.pkl
-      hash: md5
-      md5: 944357ae23baa2a832c6d0ca733f008b
-      size: 132089
+      md5: 8460169e48fde998a77aa98d123dd4a3.dir
+      size: 19858359
+      nfiles: 337
     - path: models/
       hash: md5
-      md5: cde74306a633fe7c2cc4afeea053ea24.dir
-      size: 64411898
-      nfiles: 31
-    - path: notebooks/_executed/ml_pipeline_out.ipynb
+      md5: a853ce81e7faaa6b9e8f60ce1b9a7588.dir
+      size: 6519540
+      nfiles: 4
+    - path: results/
       hash: md5
-      md5: 8ca5e157eae2be5d63bb264b3a3ae10c
-      size: 24421
-    - path: reports/models_summary/
-      hash: md5
-      md5: d751713988987e9331980363e24189ce.dir
-      size: 0
-      nfiles: 0
+      md5: 17b93cbd7ed198aee1adeae55b63ffce.dir
+      size: 2
+      nfiles: 1
