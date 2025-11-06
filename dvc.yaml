@@ -1,13 +1,15 @@
 stages:
   full_pipeline:
-    cmd: cd notebooks && if not exist _executed mkdir _executed && papermill ml_pipeline.ipynb _executed/ml_pipeline_out.ipynb
+    cmd: python src/pipelines/ml_pipeline.py
     deps:
-      - notebooks/ml_pipeline.ipynb
+      - src/pipelines/ml_pipeline.py
+      - src/data/load_data.py
+      - src/features/feature_engineering.py
+      - src/models/train_models.py
+      - src/models/mlflow.py
+      - src/visualization/plot_utils.py
       - data/raw/CEE_DATA.arff
     outs:
-      - notebooks/_executed/ml_pipeline_out.ipynb
-      - data/intermediate/df.pkl
-      - data/processed/Xy_train_resampled.pkl
-      - data/processed/Xy_test.pkl
       - models/
-      - reports/models_summary/
+      - results/
+      - mlruns/
