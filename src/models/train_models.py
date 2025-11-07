@@ -72,10 +72,11 @@ class PipelineML:
     ########################################################################
     # Guardar modelo localmente
     ########################################################################
-    def save_model(self, model, name):
+    def save_model(self, model, name="best_model_global"):
         """Guarda modelo serializado con timestamp."""
         timestamp = datetime.now().strftime("%Y%m%d_%H%M")
-        save_path = self.model_dir / f"{name}_best_model.pkl"
+        Path(self.model_dir).mkdir(parents=True, exist_ok=True)
+        save_path = self.model_dir / f"{name}_{timestamp}.pkl"
         with open(save_path, "wb") as f:
             pickle.dump(model, f)
         return save_path
@@ -87,6 +88,7 @@ class PipelineML:
     def train_and_evaluate_model(self, model, X_train, y_train, X_test, y_test, params=None):
         """
         Ejecuta el flujo completo: entrenamiento, evaluación y logging en MLflow.
+        Retorna información del modelo (sin guardar localmente aquí).
         """
         if params is None:
             params = {}
@@ -97,15 +99,8 @@ class PipelineML:
         # Evaluación
         y_pred = self.evaluate_model(best_model, X_test, y_test)
 
-        # Guardar modelo local
-        classifier_name = type(model.named_steps['classifier']).__name__
-        Path(self.model_dir).mkdir(parents=True, exist_ok=True)
-        ts = datetime.now().strftime("%Y%m%d_%H%M%S")
-        save_path = str(Path(self.model_dir) / f"{classifier_name}_best_model__{ts}.pkl")
-        with open(save_path, "wb") as f:
-            pickle.dump(best_model, f)
-
         # Registrar resultados en MLflow
+        classifier_name = type(model.named_steps['classifier']).__name__
         tracker = MLflowTracker(experiment_name=self.mlflow_experiment)
         metrics_log = {"F1_CV": float(best_score)}
 
@@ -113,12 +108,18 @@ class PipelineML:
             model=best_model,
             metrics=metrics_log,
             best_params=best_params or {},
-            name="models",
-            save_path=save_path,
+            name=classifier_name,
+            save_path=None,  # No se guarda aquí
             X_sample=X_test[:1]  # Ejemplo pequeño para inferir firma
         )
 
         # Matriz de confusión como artefacto
-        tracker.log_confusion_matrix(y_test=y_test, y_pred=y_pred, artifact_path="confusion_matrix.png")
+        tracker.log_confusion_matrix(y_test=y_test, y_pred=y_pred, artifact_path=f"confusion_matrix_{classifier_name}.png")
 
-        return best_model, best_score, best_params, save_path, y_pred
+        return {
+            "name": classifier_name,
+            "model": best_model,
+            "score": best_score,
+            "params": best_params,
+            "y_pred": y_pred
+        }
