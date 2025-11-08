@@ -91,8 +91,8 @@ stages:
       size: 7329
     - path: src/models/train_models.py
       hash: md5
-      md5: d6193bdb6fec300a65c77742f8f69d31
-      size: 4879
+      md5: 225d19d54242e8ef5031793f494b7802
+      size: 4884
     - path: src/pipelines/ml_pipeline.py
       hash: md5
       md5: 9005ac8403d20d2e9dfb59bf0ec2b2c0
@@ -104,16 +104,16 @@ stages:
     outs:
     - path: mlruns/
       hash: md5
-      md5: e7139c003b31567b4f21bd58ca0ca990.dir
-      size: 238296900
-      nfiles: 3924
+      md5: 70cf97ce587a2f1092b5ae4c237de860.dir
+      size: 365836202
+      nfiles: 6452
     - path: models/
       hash: md5
-      md5: 4281e5453104b68b8a45f5aaedbbce4b.dir
-      size: 78234480
-      nfiles: 48
+      md5: 636345fb25ef098eb76dd242534cd1c2.dir
+      size: 104731803
+      nfiles: 56
     - path: results/
       hash: md5
-      md5: 728afe5c61250581b3ffe6102396d6eb.dir
-      size: 240
-      nfiles: 12
+      md5: 588ad8d28156578277b4830a5cb400ff.dir
+      size: 5852
+      nfiles: 19
