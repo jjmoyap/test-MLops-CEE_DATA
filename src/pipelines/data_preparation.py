@@ -2,11 +2,13 @@
 # data_preparation.py — Carga y preparación de datos
 # ============================================================
 
+import os
 import pandas as pd
 from sklearn.preprocessing import LabelEncoder
 from sklearn.model_selection import train_test_split
 from src.data.load_data import ARFFLoader
 from src.features.feature_engineering import FeatureEngineering
+import joblib
 
 
 def load_and_prepare_data(data_path):
@@ -41,10 +43,21 @@ def load_and_prepare_data(data_path):
     # Features de frecuencia y mean encoding
     df = fe.add_frequency_features(df, categorical_cols, target_col='Performance_num')
 
+    # ===========================
+    # Guardar transformador FeatureEngineering en 'models/'
+    # ===========================
+    models_dir = os.path.join(os.getcwd(), "models")
+    os.makedirs(models_dir, exist_ok=True)
+    fe_path = os.path.join(models_dir, "feature_engineering.pkl")
+    joblib.dump(fe, fe_path)
+    print(f"FeatureEngineering guardado en: {fe_path}")
+
     # Dividir datos
     X = df.drop(columns=['Performance', 'Performance_grouped', 'Performance_num'])
     y = df['Performance_num']
 
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+    X_train, X_test, y_train, y_test = train_test_split(
+        X, y, test_size=0.2, random_state=42
+    )
 
     return X_train, X_test, y_train, y_test, categorical_cols
