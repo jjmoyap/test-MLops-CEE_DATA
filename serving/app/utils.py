@@ -84,12 +84,22 @@ def prepare_input_data(input_dict: dict) -> pd.DataFrame:
         # Ordinal encoding y Academic_Score
         df = fe.create_ordinal_features(df, ordinal_cols)  # Usa ordinal encoder guardado
 
-        # Features de frecuencia y mean encoding usando los mappings guardados
+        # ====================================================
+        #  Usar los mapas guardados para frecuencia y mean encoding
+        # ====================================================
         for col in categorical_cols:
             if hasattr(fe, 'freq_maps') and col in fe.freq_maps:
                 df[col + '_freq'] = df[col].map(fe.freq_maps[col])
+            else:
+                df[col + '_freq'] = 0  # valor por defecto si no se encuentra en el mapa
+
             if hasattr(fe, 'target_mean_maps') and col in fe.target_mean_maps:
                 df[col + '_target_mean'] = df[col].map(fe.target_mean_maps[col])
+            else:
+                df[col + '_target_mean'] = 0  # valor por defecto si no se encuentra en el mapa
+
+        #  Reemplazar NaN generados por categorías nuevas no vistas
+        df.fillna(0, inplace=True)
 
         return df
 

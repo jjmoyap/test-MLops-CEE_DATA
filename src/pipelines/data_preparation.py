@@ -43,6 +43,19 @@ def load_and_prepare_data(data_path):
     # Features de frecuencia y mean encoding
     df = fe.add_frequency_features(df, categorical_cols, target_col='Performance_num')
 
+    # ============================================================
+    # Guardar estadísticas de frecuencia y target mean en fe
+    # ============================================================
+    fe.freq_maps = {
+        col: df[col].value_counts(normalize=True).to_dict()
+        for col in categorical_cols
+    }
+
+    fe.target_mean_maps = {
+        col: df.groupby(col)['Performance_num'].mean().to_dict()
+        for col in categorical_cols
+    }
+
     # ===========================
     # Guardar transformador FeatureEngineering en 'models/'
     # ===========================
