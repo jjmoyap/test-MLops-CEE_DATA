@@ -1,7 +1,8 @@
 schema: '2.0'
 stages:
   eda:
-    cmd: cd notebooks && mkdir -p _executed && papermill 00_eda_ds.ipynb _executed/00_eda_ds_out.ipynb
+    cmd: cd notebooks && mkdir -p _executed && papermill 00_eda_ds.ipynb 
+      _executed/00_eda_ds_out.ipynb
     deps:
     - path: data/intermediate/df.pkl
       hash: md5
@@ -21,8 +22,8 @@ stages:
       md5: 7059caafc0d5d1ed9e69135da70bdf89
       size: 517203
   data_engineering:
-    cmd: cd notebooks && mkdir -p _executed && papermill 01_data_engineering.ipynb
-      _executed/01_data_engineering_out.ipynb
+    cmd: cd notebooks && mkdir -p _executed && papermill 
+      01_data_engineering.ipynb _executed/01_data_engineering_out.ipynb
     deps:
     - path: notebooks/01_data_engineering.ipynb
       hash: md5
@@ -38,8 +39,8 @@ stages:
       md5: e57be646e4b10a6d46f3636ccaad8636
       size: 6844
   feature_engineering:
-    cmd: cd notebooks && mkdir -p _executed && papermill 02_feature_engineering.ipynb
-      _executed/02_feature_engineering_out.ipynb
+    cmd: cd notebooks && mkdir -p _executed && papermill 
+      02_feature_engineering.ipynb _executed/02_feature_engineering_out.ipynb
     deps:
     - path: notebooks/02_feature_engineering.ipynb
       hash: md5
@@ -55,7 +56,8 @@ stages:
       md5: 5b4299e25f1cd0bdcab55c33a2a1d098
       size: 2974
   model_training:
-    cmd: cd notebooks && mkdir -p _executed && papermill 03_model_training.ipynb _executed/03_model_training_out.ipynb
+    cmd: cd notebooks && mkdir -p _executed && papermill 03_model_training.ipynb
+      _executed/03_model_training_out.ipynb
     deps:
     - path: notebooks/03_model_training.ipynb
       hash: md5
@@ -79,41 +81,79 @@ stages:
       size: 71018
     - path: src/data/load_data.py
       hash: md5
-      md5: e5da0200bf3cfd7abec505bb4b963765
-      size: 876
+      md5: fee15100451eb389b7fe7c00edb847e2
+      size: 850
     - path: src/features/feature_engineering.py
       hash: md5
-      md5: 363a95261d02d918923c4c30e8b1d22a
-      size: 1945
+      md5: 4b6f65af20b4e635b3dbb68cad4781f6
+      size: 1892
     - path: src/models/mlflow.py
       hash: md5
-      md5: c8b9caf332ce463c69615e3049333e2d
-      size: 7329
+      md5: 9a5ff50a27210abd2e53ef7b71eb20fa
+      size: 7121
     - path: src/models/train_models.py
       hash: md5
-      md5: 225d19d54242e8ef5031793f494b7802
-      size: 4884
+      md5: 39677f00be48a3a0e7451c8d1d667904
+      size: 4759
     - path: src/pipelines/ml_pipeline.py
       hash: md5
-      md5: 9005ac8403d20d2e9dfb59bf0ec2b2c0
-      size: 2343
+      md5: 112ebb8717291785a8ae1301e5653566
+      size: 2274
     - path: src/visualization/plot_utils.py
       hash: md5
-      md5: 1d3f2485899346471c54ca69986042c0
-      size: 2224
+      md5: 40d06569122fa07dd9e8d6c3b8522423
+      size: 2169
     outs:
     - path: mlruns/
       hash: md5
-      md5: 70cf97ce587a2f1092b5ae4c237de860.dir
-      size: 365836202
-      nfiles: 6452
+      md5: 6ae04f76fabceefcbb731107b4dcf287.dir
+      size: 16903532
+      nfiles: 343
     - path: models/
       hash: md5
-      md5: 636345fb25ef098eb76dd242534cd1c2.dir
-      size: 104731803
-      nfiles: 56
+      md5: dc97639d8393a95953f58dd2e99f8612.dir
+      size: 3787508
+      nfiles: 2
     - path: results/
       hash: md5
-      md5: 588ad8d28156578277b4830a5cb400ff.dir
-      size: 5852
-      nfiles: 19
+      md5: 8b3b76a2e140792431b2b922917c9596.dir
+      size: 922
+      nfiles: 1
+  drift_simulation:
+    cmd: python src/monitoring/drift.py --raw data/raw/CEE_DATA.arff 
+      --models_dir models --results src/monitoring/results_drift --reports 
+      src/monitoring/reports_drift --experiment "Data Drift Monitoring" 
+      --tracking_uri mlruns
+    deps:
+    - path: data/raw/CEE_DATA.arff
+      hash: md5
+      md5: 6af58719c88b9a8c14df007cd35312e9
+      size: 71018
+    - path: models/
+      hash: md5
+      md5: dc97639d8393a95953f58dd2e99f8612.dir
+      size: 3787508
+      nfiles: 2
+    - path: src/data/load_data.py
+      hash: md5
+      md5: fee15100451eb389b7fe7c00edb847e2
+      size: 850
+    - path: src/models/mlflow.py
+      hash: md5
+      md5: 9a5ff50a27210abd2e53ef7b71eb20fa
+      size: 7121
+    - path: src/monitoring/drift.py
+      hash: md5
+      md5: 7d0a01140b1d5ea6c504fd3902ce911b
+      size: 25090
+    outs:
+    - path: src/monitoring/reports_drift/
+      hash: md5
+      md5: 7d96937e8a6b114d423a2c522c09e2e5.dir
+      size: 134787
+      nfiles: 3
+    - path: src/monitoring/results_drift/
+      hash: md5
+      md5: d4c80c4539de0714dae3ae2501c51db6.dir
+      size: 1599
+      nfiles: 3

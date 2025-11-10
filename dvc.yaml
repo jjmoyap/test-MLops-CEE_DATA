@@ -13,3 +13,14 @@ stages:
       - models/
       - results/
       - mlruns/
+  drift_simulation:
+    cmd: python src/monitoring/drift.py --raw data/raw/CEE_DATA.arff --models_dir models --results src/monitoring/results_drift --reports src/monitoring/reports_drift --experiment "Data Drift Monitoring" --tracking_uri mlruns
+    deps:
+      - src/monitoring/drift.py
+      - src/models/mlflow.py
+      - src/data/load_data.py
+      - data/raw/CEE_DATA.arff
+      - models/
+    outs:
+      - src/monitoring/results_drift/
+      - src/monitoring/reports_drift/
