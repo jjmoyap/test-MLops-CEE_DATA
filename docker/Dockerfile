@@ -37,5 +37,5 @@ COPY . /app
 RUN useradd -m team51 && chown -R team51 /app
 USER team51
 
-# 6) Exponer el API
+# 6) Dejar preparado para exponer APi cuando se ejecute con docker run
 CMD ["uvicorn", "app:app", "--host=0.0.0.0", "--port=8880"]
