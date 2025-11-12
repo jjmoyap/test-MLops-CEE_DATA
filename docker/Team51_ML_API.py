@@ -4,7 +4,7 @@ import pandas as pd
 from fastapi import FastAPI
 from pydantic import BaseModel
 
-# Lee variables de entorno
+# Lee variables de entorno que vienen desde Dockerfile
 MODEL_URI = os.environ.get("MODEL_URI")  # p.ej. "models:/my-model/Production"
 MLFLOW_TRACKING_URI = os.environ.get("MLFLOW_TRACKING_URI")
 
