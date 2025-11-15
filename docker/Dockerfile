@@ -7,11 +7,7 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     PIP_NO_CACHE_DIR=1
 
 # Constantes del entorno, estás pueden ser modificadas al ejecutar el contenedor
-#ENV MLFLOW_TRACKING_URI=http://host.docker.internal:8080
-#ENV MODEL_URI=models:/student_grade_regressor/Production
 ENV PORT=8880
-#ENV MODEL_PATH=model/
-#ENV API_PATH=api/
 
 # Puerto por defecto del servidor de modelos, ojo no expone el puerto fuera del contenedor
 # solo avisa que internamente en el contenedor el servicio de API 
@@ -26,15 +22,22 @@ RUN apt-get update && apt-get install -y --no-install-recommends
 
 # 1) Copiar del path local al contenedor la carpeta del modelo 
 COPY models/ /ml/models/
-COPY requirements.txt /tmp/requirements.txt
 COPY docker/docker-requirements.txt /tmp/docker-requirements.txt
 COPY serving/ /ml/serving/
 COPY src/ /ml/src/
 
-# 4) Instalar dependencias de Python
+# 4) Instalar dependencias de Python y configurar locales
 RUN pip install --upgrade pip
 RUN pip install -r /tmp/docker-requirements.txt
-RUN pip install -r /tmp/requirements.txt
+
+RUN apt-get install -y locales \
+    && locale-gen C.UTF-8 \
+    && locale-gen en_US.UTF-8 \
+    && update-locale LANG=C.UTF-8
+ENV LANG=C.UTF-8
+ENV LC_ALL=C.UTF-8
+ENV PYTHONIOENCODING=utf-8
+
 
 # 5) Crear usuario no-root por seguridad
 RUN useradd -m team51 && chown -R team51 /ml
