@@ -6,6 +6,7 @@ from fastapi import FastAPI, HTTPException
 from pydantic import ValidationError
 import pandas as pd
 import os
+import glob
 
 # 🔧 Ajuste de importaciones (antes eran src.api.*)
 from serving.app.schemas import PredictionRequest, PredictionResponse
@@ -24,11 +25,11 @@ app = FastAPI(
 # ============================================================
 # 2️. Cargar el modelo local usando utils.py
 # ============================================================
-
-MODEL_PATH = os.path.join("models", "best_model_global_RandomForest_20251114_1946.pkl")
-
+MODELS_DIR = "models"
+pattern = os.path.join(MODELS_DIR, "best_model_*.pkl")
+matches = glob.glob(pattern)
 try:
-    model, model_version = load_model(MODEL_PATH)
+    model, model_version = load_model(matches[0]) if matches else (None, "N/A")
 except Exception as e:
     model = None
     model_version = "N/A"

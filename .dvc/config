@@ -1,6 +1,4 @@
 [core]
-    remote = dropbox-local
-['remote "dropbox_remote"']
-    url = C:\Users\Jorge Moya\Dropbox\ml-CEE_DATA-dvc
-['remote "dropbox-local"']
-    url = C:\Users\Jesus Tamez\Dropbox\ml-CEE_DATA-dvc
+    remote = storage
+['remote "storage"']
+    url = /Users/carlosisaacsagrerocampos/Documents/test-MLops-CEE_DATA/ml-CEE_DATA-dvc
