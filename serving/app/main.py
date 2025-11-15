@@ -25,7 +25,7 @@ app = FastAPI(
 # 2️. Cargar el modelo local usando utils.py
 # ============================================================
 
-MODEL_PATH = os.path.join("models", "best_model_global_RandomForest_20251107_0849.pkl")
+MODEL_PATH = os.path.join("models", "best_model_global_RandomForest_20251114_1946.pkl")
 
 try:
     model, model_version = load_model(MODEL_PATH)

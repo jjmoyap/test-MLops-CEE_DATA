@@ -1,5 +1,5 @@
 [core]
-    remote = dropbox_remote
+    remote = dropbox-local
 ['remote "dropbox_remote"']
     url = C:\Users\Jorge Moya\Dropbox\ml-CEE_DATA-dvc
 ['remote "dropbox-local"']

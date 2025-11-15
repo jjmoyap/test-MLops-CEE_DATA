@@ -7,11 +7,11 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     PIP_NO_CACHE_DIR=1
 
 # Constantes del entorno, estás pueden ser modificadas al ejecutar el contenedor
-ENV MLFLOW_TRACKING_URI=http://host.docker.internal:8080
-ENV MODEL_URI=models:/student_grade_regressor/Production
+#ENV MLFLOW_TRACKING_URI=http://host.docker.internal:8080
+#ENV MODEL_URI=models:/student_grade_regressor/Production
 ENV PORT=8880
-ENV MODEL_PATH=model/
-ENV API_PATH=api/
+#ENV MODEL_PATH=model/
+#ENV API_PATH=api/
 
 # Puerto por defecto del servidor de modelos, ojo no expone el puerto fuera del contenedor
 # solo avisa que internamente en el contenedor el servicio de API 
@@ -25,20 +25,20 @@ WORKDIR /ml
 RUN apt-get update && apt-get install -y --no-install-recommends 
 
 # 1) Copiar del path local al contenedor la carpeta del modelo 
-COPY ${MODEL_PATH} /ml/model
-# 2) Copiar del path local al contenedor la carpeta del modelo
-COPY docker-requirements.txt /tmp/docker-requirements.txt
-# 3) Copiar el 'Hola Mundo' de la API al contenedor
-COPY ${API_PATH} /ml/api
+COPY models/ /ml/models/
+COPY requirements.txt /tmp/requirements.txt
+COPY docker/docker-requirements.txt /tmp/docker-requirements.txt
+COPY serving/ /ml/serving/
+COPY src/ /ml/src/
 
 # 4) Instalar dependencias de Python
 RUN pip install --upgrade pip
 RUN pip install -r /tmp/docker-requirements.txt
-RUN pip install -r /ml/model/requirements.txt
+RUN pip install -r /tmp/requirements.txt
 
 # 5) Crear usuario no-root por seguridad
 RUN useradd -m team51 && chown -R team51 /ml
 USER team51
 
 # 6) Para para exponer API cuando se ejecute con docker run
-CMD ["uvicorn", "api.Team51_ML_API:app", "--host", "0.0.0.0", "--port", "8880"]
+CMD ["uvicorn", "serving.app.main:app", "--host", "0.0.0.0", "--port", "8880"]
