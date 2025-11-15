@@ -13,11 +13,11 @@ Este proyecto contiene una API REST desarrollada con **FastAPI** que sirve un mo
 ```
 docker/
 ├── Dockerfile                  # Definición de la imagen Docker
-├── docker-requirements.txt     # Dependencias de Python para la API
+├── docker-requirements.txt     # Dependencias de Python para la API y para el modelo
 ├── README.md                   # Este archivo
 ├── api/
-│   └── Team51_ML_API.py       # Código fuente de la API FastAPI
-└── model/                      # Modelo MLflow (artefactos)
+│   └── Team51_ML_API.py       # Código fuente de la API FastAPI (Hola Mundo)
+└── model/                      # Modelo MLflow (artefactos)(Hola Mundo)
     ├── MLmodel
     ├── conda.yaml
     ├── python_env.yaml
@@ -28,58 +28,58 @@ docker/
 ## ⚙️ Requisitos Previos
 
 - Docker instalado en su sistema (versión 20.10 o superior)
-- Conexión a internet (para descargar dependencias)
+- Conexión a internet (para descargar dependencias e imágenes base de Dcoker)
 - Puerto 8880 disponible en su máquina host
 
 ---
 
 ## 🔨 Opción 1: Construir la Imagen desde el Dockerfile
 
-### Paso 1: Navegar al directorio del proyecto
+### Paso 1: Descarga el proyecto del repositorio remoto al local
 
 ```bash
-cd /ruta/a/tu/proyecto/docker
+git clone https://github.com/jjmoyap/test-MLops-CEE_DATA.git
 ```
 
-### Paso 2: Construir la imagen Docker
+### Paso 2: Construye la imagen Docker
 
 ```bash
-docker build -t team51-api:latest .
+docker build --no-cache -t ml-service-51 -f docker/Dockerfile .
 ```
 
 **Parámetros:**
-- `-t team51-api:latest` : Asigna el nombre "team51-api" y la etiqueta "latest"
-- `.` : Indica que el Dockerfile está en el directorio actual
+- `t` : Nombre de la imagen
+- `f` : Indica que el Dockerfile está en el directorio __docker__
 
-⏱️ **Tiempo estimado:** 2-5 minutos (dependiendo de tu conexión a internet)
+Nota:
+- Debes estar posicionado en la raíz del proyecto 
+
+⏱️ **Tiempo estimado:** 2-5 minutos (dependiendo de tu conexión a internet y tu computadora)
 
 ### Paso 3: Verificar que la imagen se creó correctamente
 
 ```bash
-docker images | grep team51-api
+docker images | grep ml-service-51
 ```
 
 Deberías ver algo como:
 ```
-team51-api    latest    abc123def456    2 minutes ago    500MB
+ml-service-51    latest    abc123def456    2 minutes ago    500MB
 ```
 
 ### Paso 4: Ejecutar el contenedor
 
-```bash
-docker run \
+```bashx
+docker run \                                                   
   -p 8880:8880 \
-  -v ./model:/ml/model \
-  -v ./api:/ml/api \
-  c1544c/team51-api
+  --name mi_contenedor \
+  ml-service-51
 ```
 
 **Parámetros:**
-- `-v ./model:/model` : monta un volumen de tu equipo local al contenedor
-- `-v ./api:/ml/api` : monta un volumen de tu equipo local al contenedor
-- `--name team51-api-container` : Nombre del contenedor
 - `-p 8880:8880` : Mapea puerto 8880 del host al 8880 del contenedor
-- `team51-api:latest` : Imagen a utilizar
+- `--name mi_contenedor` : Asigna nombre al contenedor
+- `ml-service-51` : Imagen a utilizar
 
 ### Paso 5: Verificar que el contenedor está ejecutándose
 
@@ -87,21 +87,7 @@ docker run \
 docker ps
 ```
 
-Deberías ver el contenedor "team51-api-container" en estado "Up"
-
-### Paso 6: Ver los logs del contenedor
-
-```bash
-docker logs team51-api-container
-```
-
-Deberías ver:
-```
-Usando MODEL_URI = /ml/model
-Cargando modelo desde MLflow...
-✅ Modelo cargado correctamente.
-INFO: Uvicorn running on http://0.0.0.0:8880
-```
+Deberías ver el contenedor en estado "Up"
 
 ---
 
@@ -110,151 +96,113 @@ INFO: Uvicorn running on http://0.0.0.0:8880
 ### Paso 1: Descargar la imagen pública desde Docker Hub
 
 ```bash
-docker pull c1544c/team51-api:latest
+docker pull c1544c/ml-service-51:latest
 ```
 
-> **Nota:** La imagen pública está disponible en `c1544c/team51-api`
+> **Nota:** La imagen pública está disponible en DockerHub `c1544c/ml-service-51-api`
 
 ### Paso 2: Ejecutar el contenedor desde la imagen pública
 
 ```bash
-docker run -d \
-  --name team51-api-container \
+docker run \                                                   
   -p 8880:8880 \
-  c1544c/team51-api:latest
+  --name mi_contenedor \
+  c1544c/ml-service-51:latest
 ```
 
-### Paso 3: Verificar el funcionamiento
-
-```bash
-docker logs team51-api-container
-```
-
----
-
-## 📤 Publicar la Imagen en Docker Hub
-
-### Paso 1: Crear una cuenta en Docker Hub
-
-Visita: [https://hub.docker.com/signup](https://hub.docker.com/signup)
-
-### Paso 2: Iniciar sesión desde la terminal
-
-```bash
-docker login
-```
-
-Ingresa tu usuario y contraseña de Docker Hub
-
-### Paso 3: Etiquetar la imagen con tu usuario
-
-```bash
-docker tag team51-api:latest <tu-usuario>/team51-api:latest
-```
-
-**Ejemplo:**
-```bash
-docker tag team51-api:latest c1544c/team51-api:latest
-```
-
-### Paso 4: Subir la imagen a Docker Hub
-
-```bash
-docker push <tu-usuario>/team51-api:latest
-```
-
-⏱️ **Tiempo estimado:** 5-15 minutos (dependiendo de tu conexión a internet)
-
-### Paso 5: Verificar en Docker Hub
-
-Visita: `https://hub.docker.com/r/<tu-usuario>/team51-api`
-
----
 
 ## 🧪 Probar la API
 
 ### Opción A: Desde el navegador
 
-#### 1. Health Check
+#### 1. Navega a la siguiente URL
 ```
-http://localhost:8880/health
-```
-**Respuesta esperada:** `{"status":"ok"}`
-
-#### 2. Hola Mundo
-```
-http://localhost:8880/hola_mundo
+http://127.0.0.1:8880/
 ```
 **Respuesta esperada:** 
-```json
-{"mensaje":"Hola Mundo desde la API de Team 51 con MLflow! y FastAPI"}
-```
+![Respuesta](img/probar1.png)
 
-#### 3. Documentación interactiva
+
+#### 2. Documentación interactiva
 ```
-http://localhost:8880/docs
+http://127.0.0.1:8880/docs
 ```
 Podrás probar todos los endpoints desde la interfaz **Swagger UI**
+![Respuesta](img/probar2.png)
+
 
 ### Opción B: Desde la terminal con curl
 
 #### 1. Health Check
 ```bash
-curl http://localhost:8880/health
+curl http://127.0.0.1:8880
+```
+**Respuesta esperada:**
+```json
+{"message":"API de predicción de desempeño académico (CEE Project)","status":"running","model_version":"best_model_global_RandomForest_20251109_1602.pkl"}
 ```
 
-#### 2. Predicción individual
+#### 2. Predicción 
 ```bash
-curl -X POST "http://localhost:8880/predict_one" \
-  -H "Content-Type: application/json" \
-  -d '{"edad": 20, "horas_estudio": 5.5}'
+curl -X 'POST' \          
+  'http://127.0.0.1:8880/predict' \
+  -H 'accept: application/json' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "data": {
+    "Gender": "Male",
+    "Caste": "OBC",
+    "coaching": "Yes",
+    "time": "1-2 Hours",
+    "Class_ten_education": "CBSE",
+    "twelve_education": "State Board",
+    "medium": "English",
+    "Father_occupation": "Private Service",
+    "Mother_occupation": "Housewife",
+    "Class_X_Percentage": "Good",
+    "Class_XII_Percentage": "Vg"
+  }
+}'
 ```
 
 **Respuesta esperada:**
 ```json
-{
-  "input": {"edad": 20, "horas_estudio": 5.5},
-  "calificacion_predicha": 75.3
-}
+{"prediction":"0","probability":0.604190289821873,"model_version":"best_model_global_RandomForest_20251109_1602.pkl"}
 ```
 
-#### 3. Predicción por lotes
-```bash
-curl -X POST "http://localhost:8880/predict_batch" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "students": [
-      {"edad": 18, "horas_estudio": 3.0},
-      {"edad": 22, "horas_estudio": 7.5},
-      {"edad": 19, "horas_estudio": 4.2}
-    ]
-  }'
-```
 
 ### Opción C: Desde Python
 
 ```python
-import requests
-import json
+url = "http://127.0.0.1:8880/predict"
 
-# Health check
-response = requests.get("http://localhost:8880/health")
-print(response.json())
-
-# Predicción individual
-data = {"edad": 20, "horas_estudio": 5.5}
-response = requests.post("http://localhost:8880/predict_one", json=data)
-print(response.json())
-
-# Predicción por lotes
-batch_data = {
-    "students": [
-        {"edad": 18, "horas_estudio": 3.0},
-        {"edad": 22, "horas_estudio": 7.5}
-    ]
+headers = {
+    "accept": "application/json",
+    "Content-Type": "application/json"
 }
-response = requests.post("http://localhost:8880/predict_batch", json=batch_data)
+
+payload = {
+    "data": {
+        "Gender": "Male",
+        "Caste": "OBC",
+        "coaching": "Yes",
+        "time": "1-2 Hours",
+        "Class_ten_education": "CBSE",
+        "twelve_education": "State Board",
+        "medium": "English",
+        "Father_occupation": "Private Service",
+        "Mother_occupation": "Housewife",
+        "Class_X_Percentage": "Good",
+        "Class_XII_Percentage": "Vg"
+    }
+}
+
+response = requests.post(url, json=payload, headers=headers)
+
+print("Status:", response.status_code)
+print("Response JSON:")
 print(response.json())
+
 ```
 
 ---
@@ -263,85 +211,43 @@ print(response.json())
 
 ### Detener el contenedor
 ```bash
-docker stop team51-api-container
+docker stop mi_contenedor
 ```
 
 ### Iniciar el contenedor detenido
 ```bash
-docker start team51-api-container
+docker start mi_contenedor
 ```
 
 ### Reiniciar el contenedor
 ```bash
-docker restart team51-api-container
+docker restart mi_contenedor
 ```
 
 ### Ver logs en tiempo real
 ```bash
-docker logs -f team51-api-container
+docker logs -f mi_contenedor
 ```
 
 ### Ejecutar comandos dentro del contenedor
 ```bash
-docker exec -it team51-api-container /bin/bash
+docker exec -it mi_contenedor /bin/bash
 ```
 
 ### Eliminar el contenedor
 ```bash
-docker rm -f team51-api-container
+docker rm -f mi_contenedor
 ```
 
 ### Eliminar la imagen
 ```bash
-docker rmi team51-api:latest
+docker rmi mi_contenedor
 ```
 
 ### Ver estadísticas de uso del contenedor
 ```bash
-docker stats team51-api-container
+docker stats mi_contenedor
 ```
-
----
-
-## 🔧 Variables de Entorno Configurables
-
-Al ejecutar el contenedor, puedes sobrescribir las variables de entorno:
-
-```bash
-docker run -d \
-  --name team51-api-container \
-  -p 8880:8880 \
-  -e PORT=9000 \
-  -e MLFLOW_TRACKING_URI=http://mi-servidor-mlflow:5000 \
-  team51-api:latest
-```
-
-### Variables disponibles:
-
-| Variable | Descripción | Default |
-|----------|-------------|---------|
-| `PORT` | Puerto donde se ejecuta la API | `8880` |
-| `MLFLOW_TRACKING_URI` | URI del servidor MLflow | `http://host.docker.internal:8080` |
-| `MODEL_URI` | URI del modelo MLflow | `models:/student_grade_regressor/Production` |
-| `MODEL_PATH` | Ruta del modelo en el contenedor | `model/` |
-| `API_PATH` | Ruta de la API en el contenedor | `api/` |
-
----
-
-## 💻 Volúmenes para Desarrollo
-
-Si deseas modificar el código sin reconstruir la imagen, puedes montar volúmenes:
-
-```bash
-docker run -d \
-  --name team51-api-container \
-  -p 8880:8880 \
-  -v $(pwd)/api:/ml/api \
-  -v $(pwd)/model:/ml/model \
-  team51-api:latest
-```
-
-Esto permite editar el código en tiempo real y reiniciar el contenedor para aplicar los cambios sin necesidad de reconstruir la imagen.
 
 ---
 
@@ -351,7 +257,7 @@ Esto permite editar el código en tiempo real y reiniciar el contenedor para apl
 
 **Solución 1:** Verificar logs
 ```bash
-docker logs team51-api-container
+docker logs mi_contenedor
 ```
 
 **Solución 2:** Verificar que el puerto 8880 no esté en uso
@@ -368,15 +274,6 @@ netstat -ano | findstr :8880
 ls -la model/
 ```
 
-### Problema: Error "RESOURCE_DOES_NOT_EXIST: Run with id=model not found"
-
-**Solución:** Verificar que `MODEL_URI` apunte a la ruta correcta del modelo
-
-En `Team51_ML_API.py`, asegúrate de que:
-```python
-MODEL_URI = "/ml/model"
-```
-
 ### Problema: La API responde lento
 
 **Solución:** Asignar más recursos al contenedor Docker
@@ -386,6 +283,7 @@ docker run -d \
   --memory="2g" \
   --cpus="2.0" \
   -p 8880:8880 \
+  --name mi_contenedor \
   team51-api:latest
 ```
 
@@ -425,28 +323,12 @@ docker build --no-cache -t team51-api:latest .
 
 | Método | Endpoint | Descripción |
 |--------|----------|-------------|
-| `GET` | `/health` | Verificación del estado del servicio |
-| `GET` | `/hola_mundo` | Mensaje de bienvenida |
+| `GET` | `/` | Mensaje de bienvenida |
 | `GET` | `/docs` | Documentación interactiva Swagger |
-| `POST` | `/predict_one` | Predicción para un estudiante |
-| `POST` | `/predict_batch` | Predicción para múltiples estudiantes |
+| `POST` | `/open` | Predicción para un estudiante |
+| `POST` | `/predict` | Modelo de predicción |
 
-### Modelo de datos:
 
-**Input:**
-```json
-{"edad": int, "horas_estudio": float}
-```
-
-**Output:**
-```json
-{
-  "input": {...},
-  "calificacion_predicha": float
-}
-```
-
----
 
 ## ✨ Mejores Prácticas
 
@@ -500,12 +382,11 @@ Para reportar problemas o sugerencias, por favor crear un issue en el repositori
 
 ## 📝 Changelog
 
-### Versión 1.0.0 (14 de noviembre de 2025)
+### Versión 1.1.0 (15 de noviembre de 2025)
 
 - ✨ Implementación inicial de la API con FastAPI
-- 🔗 Integración con MLflow para carga de modelos
 - 🐳 Dockerización del servicio
-- 📊 Endpoints de predicción individual y por lotes
+- 📊 Endpoints de predicción
 - 📖 Documentación completa
 
 ---
