@@ -1,53 +1,94 @@
-from sklearn.preprocessing import LabelEncoder, OrdinalEncoder
-from imblearn.over_sampling import SMOTE
+# ============================================================
+# feature_engineering.py — Rare Category + Target Mean Encoding
+# ============================================================
+
 import pandas as pd
+from sklearn.base import BaseEstimator, TransformerMixin
 
-class FeatureEngineering:
+
+class FeatureEngineering(BaseEstimator, TransformerMixin):
     """
-    Clase para manejar todas las transformaciones de features,
-    incluyendo encoding ordinal, features de frecuencia y SMOTE.
+    Aplica:
+      1. Rare category grouping para variables categóricas de alta cardinalidad.
+      2. Target mean encoding con suavizado (smoothing).
+      3. Elimina las columnas categóricas originales.
     """
 
-    def __init__(self, ordinal_map=None):
+    def __init__(self, categorical_cols=None, rare_threshold=0.03, alpha=10.0):
         """
-        Args:
-            ordinal_map (list): Lista ordenada de categorías ordinales.
+        Parameters
+        ----------
+        categorical_cols : list[str]
+            Columnas categóricas a transformar.
+        rare_threshold : float
+            Frecuencia mínima relativa para NO ser considerada 'rara'.
+        alpha : float
+            Parámetro de suavizado para target mean encoding.
         """
-        self.ordinal_map = ordinal_map
-        self.ord_enc = None
+        self.categorical_cols = categorical_cols
+        self.rare_threshold = rare_threshold
+        self.alpha = alpha
 
-    def combine_rare(self, df, col, threshold=0.2):
-        """
-        Combina categorías raras en 'OTHERS'.
-        """
-        counts = df[col].value_counts(normalize=True)
-        rare = counts[counts < threshold].index
-        df[col] = df[col].replace(rare, 'OTHERS')
-        return df
+        # Se aprenden en fit
+        self.rare_maps_ = {}
+        self.target_mean_maps_ = {}
+        self.global_mean_ = None
 
-    def create_ordinal_features(self, df, ordinal_cols):
-        """
-        Crea features ordinales y un score promedio académico.
-        """
-        self.ord_enc = OrdinalEncoder(categories=[self.ordinal_map]*len(ordinal_cols))
-        df[[col+'_num' for col in ordinal_cols]] = self.ord_enc.fit_transform(df[ordinal_cols])
-        df['Academic_Score'] = df[[col+'_num' for col in ordinal_cols]].mean(axis=1)
-        return df
+    def fit(self, X, y=None):
+        if y is None:
+            raise ValueError("FeatureEngineering.fit requiere un 'y' para target mean encoding.")
 
-    def add_frequency_features(self, df, categorical_cols, target_col='Performance_num'):
-        """
-        Crea features de frecuencia y mean encoding.
-        """
-        for col in categorical_cols:
-            df[col+'_freq'] = df[col].map(df[col].value_counts(normalize=True))
-            target_mean = df.groupby(col)[target_col].mean()
-            df[col+'_target_mean'] = df[col].map(target_mean)
-        return df
+        X = pd.DataFrame(X).copy()
+        y = pd.Series(y)
 
-    def apply_smote(self, X, y):
-        """
-        Aplica SMOTE al conjunto de entrenamiento.
-        """
-        smote = SMOTE(random_state=42)
-        X_res, y_res = smote.fit_resample(X, y)
-        return X_res, y_res
+        # Inferir columnas categóricas si no se pasan explícitamente
+        if self.categorical_cols is None:
+            self.categorical_cols = X.select_dtypes(include=["object", "category"]).columns.tolist()
+
+        # 1. Aprender rare category grouping
+        self.rare_maps_ = {}
+        for col in self.categorical_cols:
+            freq = X[col].value_counts(normalize=True)
+            rare_values = freq[freq < self.rare_threshold].index
+            self.rare_maps_[col] = set(rare_values)
+
+        # 2. Aplicar rare grouping temporalmente para calcular medias
+        X_tmp = X.copy()
+        for col in self.categorical_cols:
+            rare_set = self.rare_maps_[col]
+            X_tmp[col] = X_tmp[col].apply(lambda v: "OTHERS" if v in rare_set else v)
+
+        # 3. Media global del target
+        self.global_mean_ = y.mean()
+
+        # 4. Calcular target mean encoding (suavizado) por categoría
+        self.target_mean_maps_ = {}
+        for col in self.categorical_cols:
+            df_temp = pd.concat([X_tmp[col], y], axis=1)
+            df_temp.columns = [col, "target"]
+
+            counts = df_temp.groupby(col)["target"].count()
+            means = df_temp.groupby(col)["target"].mean()
+
+            smooth = (counts * means + self.alpha * self.global_mean_) / (counts + self.alpha)
+            self.target_mean_maps_[col] = smooth.to_dict()
+
+        return self
+
+    def transform(self, X):
+        X = pd.DataFrame(X).copy()
+
+        # 1. Rare grouping
+        for col in self.categorical_cols:
+            rare_set = self.rare_maps_.get(col, set())
+            X[col] = X[col].apply(lambda v: "OTHERS" if v in rare_set else v)
+
+        # 2. Target mean encoding → nuevas features
+        for col in self.categorical_cols:
+            mapping = self.target_mean_maps_.get(col, {})
+            X[col + "_te"] = X[col].map(mapping).fillna(self.global_mean_)
+
+        # 3. Eliminar columnas categóricas originales
+        X = X.drop(columns=self.categorical_cols, errors="ignore")
+
+        return X

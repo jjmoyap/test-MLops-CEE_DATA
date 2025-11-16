@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import numpy as np
 from datetime import datetime
-from sklearn.model_selection import GridSearchCV
+from sklearn.model_selection import GridSearchCV,RandomizedSearchCV
 from sklearn.metrics import make_scorer, f1_score, classification_report
 from pathlib import Path
 
@@ -38,6 +38,18 @@ class PipelineML:
         f1_scorer = make_scorer(f1_score, average='macro')
         if params:
             gs = GridSearchCV(model, params, cv=self.cv, scoring=f1_scorer, n_jobs=-1)
+            """
+            rs = RandomizedSearchCV(
+                estimator=model,
+                param_distributions=params,
+                n_iter=20,               # number of random combinations to test
+                scoring=f1_scorer,
+                n_jobs=-1,
+                cv=self.cv,
+                random_state=42,
+                verbose=2)
+            rs.fit(X, y)
+            return rs.best_estimator_, rs.best_score_, rs.best_params_"""
             gs.fit(X, y)
             return gs.best_estimator_, gs.best_score_, gs.best_params_
         else:
