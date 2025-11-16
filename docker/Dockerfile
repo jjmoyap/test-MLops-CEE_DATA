@@ -18,7 +18,9 @@ EXPOSE 8880
 WORKDIR /ml
 
 # Dependencias del sistema si alguna lib de Python las requiere
-RUN apt-get update && apt-get install -y --no-install-recommends 
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends locales \
+    && rm -rf /var/lib/apt/lists/* /var/cache/apt/*
 
 # 1) Copiar del path local al contenedor la carpeta del modelo 
 COPY models/ /ml/models/
